@@ -2,6 +2,7 @@ package movies
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -60,7 +61,6 @@ func (s *APIMovieSearcher) SearchMoviesSorted(query string, page string) ([]Movi
 		return nil, err
 	}
 
-
 	// unmarshall response and get the movie array
 	respBody, err := ioutil.ReadAll(resp.Body)
 
@@ -75,11 +75,12 @@ func (s *APIMovieSearcher) SearchMoviesSorted(query string, page string) ([]Movi
 	sort.Sort(ByYear(search))
 
 	//if there are years repetead
-	if(len(removeDuplicateElement(search))!= len(search)){
-		// sort by name
-	sort.Sort(ByTitle(search))
-}
-
+	//	if len(removeDuplicateElement(search)) != len(search) {
+	//		fmt.Println("LEN REPETIDOS ", len(removeDuplicateElement(search)))
+	//		fmt.Println("LEN SEARCH ", len(search))
+	// sort by name
+	//	sort.Sort(ByTitle(search))
+	//	}
 
 	// return result
 	return search, nil
@@ -87,26 +88,23 @@ func (s *APIMovieSearcher) SearchMoviesSorted(query string, page string) ([]Movi
 
 //sort by Year
 type ByYear []Movie
-func (a ByYear) Len() int           { return len(a) }
-func (a ByYear) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByYear) Less(i, j int) bool { return a[i].Year < a[j].Year }
 
-// sort by title
-type ByTitle []Movie
-func (a ByTitle) Len() int           { return len(a) }
-func (a ByTitle) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByTitle) Less(i, j int) bool { return a[i].Title < a[j].Title }
-
-
+func (a ByYear) Len() int      { return len(a) }
+func (a ByYear) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a ByYear) Less(i, j int) bool {
+	if a[i].Year == a[j].Year {
+		return a[i].Title < a[j].Title
+	}
+	return a[i].Year < a[j].Year
+}
 
 // remove the duplicated element yo compare length
 func removeDuplicateElement(intarray []Movie) []Movie {
 
-
 	checkKeys := make(map[string]bool)
 	listOfFinalArr := []Movie{}
-	
-	for _, val := range intarray {	
+
+	for _, val := range intarray {
 
 		_, have := checkKeys[val.Year]
 		if !have {
@@ -114,5 +112,7 @@ func removeDuplicateElement(intarray []Movie) []Movie {
 			listOfFinalArr = append(listOfFinalArr, val)
 		}
 	}
+	fmt.Println(" REPETIDOS ", listOfFinalArr)
+
 	return listOfFinalArr
 }
